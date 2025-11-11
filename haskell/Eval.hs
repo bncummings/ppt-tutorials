@@ -98,13 +98,13 @@ eval1 env (Id var)       = Map.lookup var env
 eval1 env (Pre op e)     = 
   case eval1 env e of 
     Nothing -> Nothing
-    Just e' -> Just $ (preOpMap Map.! op) e'
+    Just e' -> Just $ (preOpMap ! op) e'
 eval1 env (Bin op e1 e2) = 
   case eval1 env e1 of
     Nothing  -> Nothing 
     Just e1' -> case eval1 env e2 of
       Nothing -> Nothing 
-      Just e2' -> Just $ (binOpMap Map.! op) e1' e2'
+      Just e2' -> Just $ (binOpMap ! op) e1' e2'
 
 {-
 Let's look at this line: 
@@ -116,11 +116,11 @@ This is just an fmap!
 eval2 :: Env -> Expr -> Maybe Double
 eval2 env (Val n)        = Just n
 eval2 env (Id var)       = Map.lookup var env
-eval2 env (Pre op e)     = (preOpMap Map.! op) <$> (eval2 env e)
+eval2 env (Pre op e)     = preOpMap ! op <$> eval2 env e
 eval2 env (Bin op e1 e2) = 
   case eval2 env e1 of
     Nothing  -> Nothing 
-    Just e1' -> (binOpMap Map.! op) e1' <$> (eval2 env e2)
+    Just e1' -> (binOpMap ! op) e1' <$> eval2 env e2
 
 {-
 How are we going to handle that first operand e1?
@@ -148,8 +148,8 @@ well this is just the definition of an applicative map <*> isn't it...
 eval3 :: Env -> Expr -> Maybe Double
 eval3 env (Val n)        = Just n
 eval3 env (Id var)       = Map.lookup var env
-eval3 env (Pre op e)     = (preOpMap Map.! op) <$> (eval3 env e)
-eval3 env (Bin op e1 e2) = ((binOpMap Map.! op) <$> eval3 env e1) <*> (eval3 env e2)
+eval3 env (Pre op e)     = preOpMap ! op <$> eval3 env e
+eval3 env (Bin op e1 e2) = (binOpMap ! op <$> eval3 env e1) <*> eval3 env e2
 
 
 {- 
